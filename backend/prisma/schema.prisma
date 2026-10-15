@@ -1,0 +1,186 @@
+// Rent House BD — database schema
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  RENTER
+  OWNER
+  ADMIN
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum DocumentType {
+  NATIONAL_ID
+  PASSPORT
+  OWNERSHIP_DEED
+  LAND_TAX_RECEIPT
+  UTILITY_BILL
+  OTHER
+}
+
+enum PropertyType {
+  FLAT
+  HOUSE
+  ROOM
+  SUBLET
+}
+
+/// SALE is reserved for the future premium membership and is not accepted by the API yet.
+enum ListingPurpose {
+  RENT
+  SALE
+}
+
+enum ListingStatus {
+  ACTIVE
+  INACTIVE
+  RENTED
+  REMOVED
+}
+
+enum VideoStatus {
+  PROCESSING
+  READY
+  FAILED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  phone        String?
+  passwordHash String
+  role         Role     @default(RENTER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ownerProfile     OwnerProfile?
+  listings         Listing[]
+  favorites        Favorite[]
+  reviewedProfiles OwnerProfile[] @relation("ReviewedBy")
+}
+
+/// An owner's verification request. Owners can only post listings once this is APPROVED by an admin.
+model OwnerProfile {
+  id               String             @id @default(cuid())
+  userId           String             @unique
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName         String
+  nationalIdNumber String
+  phone            String
+  address          String
+  propertyAddress  String
+  notes            String?
+  status           VerificationStatus @default(PENDING)
+  reviewNote       String?
+  reviewedById     String?
+  reviewedBy       User?              @relation("ReviewedBy", fields: [reviewedById], references: [id])
+  reviewedAt       DateTime?
+  submittedAt      DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  documents OwnershipDocument[]
+
+  @@index([status])
+}
+
+/// Identity / ownership proof. Stored privately in S3 and only visible to admins via signed URLs.
+model OwnershipDocument {
+  id             String       @id @default(cuid())
+  ownerProfileId String
+  ownerProfile   OwnerProfile @relation(fields: [ownerProfileId], references: [id], onDelete: Cascade)
+  type           DocumentType
+  fileName       String
+  mimeType       String
+  s3Key          String
+  uploadedAt     DateTime     @default(now())
+}
+
+model Listing {
+  id            String         @id @default(cuid())
+  ownerId       String
+  owner         User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title         String
+  description   String
+  propertyType  PropertyType
+  purpose       ListingPurpose @default(RENT)
+  status        ListingStatus  @default(ACTIVE)
+  rentAmount    Int
+  bedrooms      Int
+  bathrooms     Int
+  areaSqft      Int?
+  floor         Int?
+  furnished     Boolean        @default(false)
+  availableFrom DateTime?
+
+  // Location
+  division  String
+  district  String
+  area      String
+  address   String
+  latitude  Float?
+  longitude Float?
+
+  // Contact (only revealed to registered users)
+  phoneNumbers   String[]
+  whatsappNumber String
+  contactEmail   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  images    ListingImage[]
+  videos    ListingVideo[]
+  favorites Favorite[]
+
+  @@index([status, purpose])
+  @@index([rentAmount])
+  @@index([bedrooms])
+  @@index([district, area])
+  @@index([latitude, longitude])
+}
+
+model ListingImage {
+  id        String   @id @default(cuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  s3Key     String
+  url       String
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([listingId, position])
+}
+
+model ListingVideo {
+  id           String      @id @default(cuid())
+  listingId    String
+  listing      Listing     @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  youtubeId    String?
+  status       VideoStatus @default(PROCESSING)
+  errorMessage String?
+  createdAt    DateTime    @default(now())
+}
+
+model Favorite {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, listingId])
+}
