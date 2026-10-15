@@ -13,6 +13,10 @@ export default () => ({
     bucket: process.env.AWS_S3_BUCKET ?? '',
     publicUrl: process.env.AWS_S3_PUBLIC_URL ?? '',
   },
+  sms: {
+    // HTTP gateway URL with {to} and {message} placeholders (see .env.example)
+    apiUrl: process.env.SMS_API_URL ?? '',
+  },
   youtube: {
     clientId: process.env.YOUTUBE_CLIENT_ID ?? '',
     clientSecret: process.env.YOUTUBE_CLIENT_SECRET ?? '',

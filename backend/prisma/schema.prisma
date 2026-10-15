@@ -24,11 +24,34 @@ enum VerificationStatus {
 
 enum DocumentType {
   NATIONAL_ID
+  NATIONAL_ID_BACK
+  SELFIE_WITH_NID
   PASSPORT
   OWNERSHIP_DEED
+  MUTATION_KHATIAN
+  DCR
   LAND_TAX_RECEIPT
+  HOLDING_TAX_RECEIPT
   UTILITY_BILL
+  WARISH_CERTIFICATE
+  ALLOTMENT_LETTER
+  POWER_OF_ATTORNEY
   OTHER
+}
+
+/// Land-use zone of an address.
+enum ZoneType {
+  RESIDENTIAL
+  COMMERCIAL
+  NON_RESIDENTIAL
+}
+
+/// How the applicant holds the property. Decides which extra documents are required.
+enum OwnershipType {
+  SELF
+  INHERITED
+  DEVELOPER_PURCHASE
+  REPRESENTATIVE
 }
 
 enum PropertyType {
@@ -58,19 +81,36 @@ enum VideoStatus {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  phone        String?
-  passwordHash String
-  role         Role     @default(RENTER)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String    @id @default(cuid())
+  name            String
+  email           String    @unique
+  phone           String?
+  /// Set once the current `phone` has been confirmed with an SMS code.
+  phoneVerifiedAt DateTime?
+  passwordHash    String
+  role            Role      @default(RENTER)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   ownerProfile     OwnerProfile?
   listings         Listing[]
   favorites        Favorite[]
   reviewedProfiles OwnerProfile[] @relation("ReviewedBy")
+  phoneOtps        PhoneOtp[]
+}
+
+/// One-time SMS code sent to confirm a user's phone number.
+model PhoneOtp {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone     String
+  codeHash  String
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
 
 /// An owner's verification request. Owners can only post listings once this is APPROVED by an admin.
@@ -81,8 +121,22 @@ model OwnerProfile {
   fullName         String
   nationalIdNumber String
   phone            String
+  /// Present address: division / district / area, then `address` holds building, floor, flat, road…
+  addressDivision  String?
+  addressDistrict  String?
+  addressArea      String?
+  addressZone      ZoneType?
+  /// Name of the zone, e.g. "Kolpolok R/A". The UI calls zones "areas".
+  addressZoneName  String?
   address          String
+  /// Property location: division / district / area, then `propertyAddress` holds building, floor, flat, road…
+  propertyDivision String?
+  propertyDistrict String?
+  propertyArea     String?
+  propertyZone     ZoneType?
+  propertyZoneName String?
   propertyAddress  String
+  ownershipType    OwnershipType      @default(SELF)
   notes            String?
   status           VerificationStatus @default(PENDING)
   reviewNote       String?

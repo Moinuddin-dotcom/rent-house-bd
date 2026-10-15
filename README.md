@@ -48,15 +48,16 @@ The backend can also run fully in Docker: `docker compose up --build`. It uses `
 | ------- | -------- | -------- |
 | AWS S3  | Listing photos (public) and ownership documents (private, signed URLs) | `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET`, `AWS_S3_PUBLIC_URL` |
 | YouTube Data API v3 | Owner videos are uploaded to the platform channel as *unlisted* and embedded | `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`, `YOUTUBE_REFRESH_TOKEN` |
+| SMS gateway (any HTTP API, e.g. BulkSMSBD) | Phone number verification codes | `SMS_API_URL` (URL with `{to}` and `{message}` placeholders) |
 
-If S3 or YouTube is not configured the API still runs, but upload endpoints return `503`. The listing bucket prefix `listings/` must be publicly readable, or served through a CDN. `documents/` must stay private.
+If S3 or YouTube is not configured the API still runs, but upload endpoints return `503`. Without `SMS_API_URL` in development, no SMS is sent and the phone verification code is always **`123456`**. In production (`NODE_ENV=production`) the fixed code is never accepted: real codes are sent by SMS, and the endpoint returns `503` until `SMS_API_URL` is set. The listing bucket prefix `listings/` must be publicly readable, or served through a CDN. `documents/` must stay private.
 
 To get a YouTube refresh token, create an OAuth client (type "Desktop" or "Web") in Google Cloud and enable YouTube Data API v3. Then authorise the channel with the `https://www.googleapis.com/auth/youtube.upload` scope, for example through the OAuth 2.0 Playground, and copy the refresh token.
 
 ## User flows
 
 1. **Renter:** browse `/listings` with filters or the map → open a listing → register or log in → see the phone numbers, WhatsApp and email → save favourites.
-2. **Owner:** register as an owner → submit verification with NID and ownership documents → wait for admin approval → post a listing → add photos and videos.
+2. **Owner:** register as an owner → verify the phone number by SMS code → choose how they hold the property → upload the required documents (NID front/back, selfie with NID, dolil, khajna, utility bill, plus mutation khatian / warish certificate / allotment letter / power of attorney depending on the case) → wait for admin approval → post a listing → add photos and videos.
 3. **Admin:** log in with the seeded account → `/admin/owner-requests` → open the documents → approve or reject with a note → moderate listings.
 
 ## Scripts

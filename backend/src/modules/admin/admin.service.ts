@@ -45,7 +45,7 @@ export class AdminService {
     const profile = await this.prisma.ownerProfile.findUnique({
       where: { id },
       include: {
-        user: { select: { id: true, name: true, email: true, phone: true, createdAt: true } },
+        user: { select: { id: true, name: true, email: true, phone: true, phoneVerifiedAt: true, createdAt: true } },
         reviewedBy: { select: { id: true, name: true } },
         documents: true,
       },

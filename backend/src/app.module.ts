@@ -12,6 +12,7 @@ import { FavoritesModule } from './modules/favorites/favorites.module';
 import { HealthModule } from './modules/health/health.module';
 import { ListingsModule } from './modules/listings/listings.module';
 import { OwnersModule } from './modules/owners/owners.module';
+import { PhoneModule } from './modules/phone/phone.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { UsersModule } from './modules/users/users.module';
 import { YoutubeModule } from './modules/youtube/youtube.module';
@@ -27,6 +28,7 @@ import { PrismaModule } from './prisma/prisma.module';
     HealthModule,
     UsersModule,
     AuthModule,
+    PhoneModule,
     OwnersModule,
     ListingsModule,
     FavoritesModule,

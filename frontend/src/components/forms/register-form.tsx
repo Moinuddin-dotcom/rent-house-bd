@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Building2, Search } from 'lucide-react';
+import { Building2, Check, Circle, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -9,10 +9,11 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useAuth } from '@/hooks/use-auth';
 import { safeNext } from '@/lib/redirects';
 import { cn } from '@/lib/utils';
-import { registerSchema, type RegisterValues } from '@/lib/validations/auth';
+import { PASSWORD_RULES, registerSchema, type RegisterValues } from '@/lib/validations/auth';
 
 const ACCOUNT_OPTIONS = [
   { value: 'RENTER', title: 'I want to rent', description: 'Contact owners & save favourites', icon: Search },
@@ -36,6 +37,8 @@ export function RegisterForm() {
       accountType: params.get('type') === 'OWNER' ? 'OWNER' : 'RENTER',
     },
   });
+
+  const password = form.watch('password');
 
   const onSubmit = async (values: RegisterValues) => {
     try {
@@ -128,7 +131,7 @@ export function RegisterForm() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" autoComplete="new-password" {...field} />
+                  <PasswordInput autoComplete="new-password" aria-describedby="password-rules" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -141,13 +144,24 @@ export function RegisterForm() {
               <FormItem>
                 <FormLabel>Confirm password</FormLabel>
                 <FormControl>
-                  <Input type="password" autoComplete="new-password" {...field} />
+                  <PasswordInput autoComplete="new-password" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
+        <ul id="password-rules" className="grid gap-1 text-xs sm:grid-cols-2" aria-label="Password requirements">
+          {PASSWORD_RULES.map((rule) => {
+            const met = rule.test(password);
+            return (
+              <li key={rule.label} className={cn('flex items-center gap-1.5', met ? 'text-emerald-600' : 'text-muted-foreground')}>
+                {met ? <Check className="h-3.5 w-3.5" /> : <Circle className="h-3 w-3" />}
+                {rule.label}
+              </li>
+            );
+          })}
+        </ul>
         {form.watch('accountType') === 'OWNER' && (
           <FormDescription>
             After registering you&apos;ll submit your ID and proof of ownership. An admin reviews it before you can post.

@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
-import { api, tokenStorage } from '@/lib/api-client';
+import { api, SESSION_EXPIRED_EVENT, TOKEN_KEY, tokenStorage } from '@/lib/api-client';
 import type { LoginValues, RegisterValues } from '@/lib/validations/auth';
 import type { AuthResponse, User } from '@/types';
 
@@ -38,6 +38,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     void refresh();
+  }, [refresh]);
+
+  // Log out here when the token is rejected, or when another tab logs in / out
+  useEffect(() => {
+    const onExpired = () => setUser(null);
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === TOKEN_KEY || e.key === null) void refresh();
+    };
+    window.addEventListener(SESSION_EXPIRED_EVENT, onExpired);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired);
+      window.removeEventListener('storage', onStorage);
+    };
   }, [refresh]);
 
   const handleAuth = useCallback(
