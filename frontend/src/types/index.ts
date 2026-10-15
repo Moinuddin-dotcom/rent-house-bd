@@ -5,17 +5,28 @@ export type ListingStatus = 'ACTIVE' | 'INACTIVE' | 'RENTED' | 'REMOVED';
 export type VideoStatus = 'PROCESSING' | 'READY' | 'FAILED';
 export type DocumentType =
   | 'NATIONAL_ID'
+  | 'NATIONAL_ID_BACK'
+  | 'SELFIE_WITH_NID'
   | 'PASSPORT'
   | 'OWNERSHIP_DEED'
+  | 'MUTATION_KHATIAN'
+  | 'DCR'
   | 'LAND_TAX_RECEIPT'
+  | 'HOLDING_TAX_RECEIPT'
   | 'UTILITY_BILL'
+  | 'WARISH_CERTIFICATE'
+  | 'ALLOTMENT_LETTER'
+  | 'POWER_OF_ATTORNEY'
   | 'OTHER';
+export type ZoneType = 'RESIDENTIAL' | 'COMMERCIAL' | 'NON_RESIDENTIAL';
+export type OwnershipType = 'SELF' | 'INHERITED' | 'DEVELOPER_PURCHASE' | 'REPRESENTATIVE';
 
 export interface User {
   id: string;
   name: string;
   email: string;
   phone: string | null;
+  phoneVerifiedAt: string | null;
   role: Role;
   createdAt: string;
   ownerVerificationStatus?: VerificationStatus | null;
@@ -98,15 +109,26 @@ export interface OwnerProfile {
   fullName: string;
   nationalIdNumber: string;
   phone: string;
+  addressDivision: string | null;
+  addressDistrict: string | null;
+  addressArea: string | null;
+  addressZone: ZoneType | null;
+  addressZoneName: string | null;
   address: string;
+  propertyDivision: string | null;
+  propertyDistrict: string | null;
+  propertyArea: string | null;
+  propertyZone: ZoneType | null;
+  propertyZoneName: string | null;
   propertyAddress: string;
+  ownershipType: OwnershipType;
   notes: string | null;
   status: VerificationStatus;
   reviewNote: string | null;
   reviewedAt: string | null;
   submittedAt: string;
   documents?: OwnershipDocument[];
-  user?: { id: string; name: string; email: string; phone?: string | null };
+  user?: { id: string; name: string; email: string; phone?: string | null; phoneVerifiedAt?: string | null };
   _count?: { documents: number };
 }
 

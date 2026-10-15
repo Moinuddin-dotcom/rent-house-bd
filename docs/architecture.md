@@ -20,7 +20,8 @@ rent-house-bd/
 │   │       ├── admin/           Review owner requests, moderate listings, stats
 │   │       ├── listings/        Public search, details, contact reveal, owner CRUD, images, videos
 │   │       ├── favorites/       Renter favourites
-│   │       ├── storage/         AWS S3 service
+│   │       ├── phone/           SMS code phone verification + SMS gateway service
+│       ├── storage/         AWS S3 service
 │   │       ├── youtube/         YouTube upload service
 │   │       └── health/          GET /health
 │   ├── Dockerfile
@@ -79,6 +80,7 @@ All routes require a JWT by default. Routes decorated with `@Public()` don't, an
 | DELETE | /listings/:id                          | owner (own)   |
 | POST   | /listings/:id/images, /:id/videos      | owner (own)   |
 | DELETE | /listings/:id/images/:imageId, /videos/:videoId | owner (own) |
+| POST   | /phone/send-code, /phone/verify        | user          |
 | GET    | /owners/verification/me                | owner         |
 | POST   | /owners/verification                   | owner         |
 | GET    | /favorites, /favorites/ids             | user          |

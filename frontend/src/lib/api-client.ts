@@ -1,5 +1,7 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
-const TOKEN_KEY = 'rhbd_token';
+export const TOKEN_KEY = 'rhbd_token';
+/** Fired on `window` when the API rejects the stored token (expired, or cleared in another tab). */
+export const SESSION_EXPIRED_EVENT = 'rhbd:session-expired';
 
 export class ApiError extends Error {
   constructor(
@@ -46,6 +48,12 @@ export async function api<T>(path: string, { body, query, headers, ...init }: Re
     },
     body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
   });
+
+  if (res.status === 401 && token) {
+    tokenStorage.clear();
+    window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
+    throw new ApiError('Your session has expired. Please log in again.', 401);
+  }
 
   if (!res.ok) {
     let message = res.statusText || 'Request failed';

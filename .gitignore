@@ -4,8 +4,6 @@ dist/
 out/
 coverage/
 *.log
-.env
-.env.local
 .env.*.local
 !.env.example
 .DS_Store
@@ -13,3 +11,4 @@ coverage/
 next-env.d.ts
 tmp/
 uploads/
+config.bat

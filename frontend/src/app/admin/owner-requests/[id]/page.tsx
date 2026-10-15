@@ -15,9 +15,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useApi } from '@/hooks/use-api';
 import { api } from '@/lib/api-client';
-import { DOCUMENT_TYPES } from '@/lib/constants';
+import { DOCUMENT_TYPES, OWNERSHIP_TYPES, ZONE_TYPES } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
 import type { OwnerProfile } from '@/types';
+
+const joinAddress = (...parts: (string | null | undefined)[]) => parts.filter(Boolean).join(', ');
+
+/** e.g. "Residential area: Kolpolok R/A" */
+const zoneLabel = (zone: string | null, name: string | null) => {
+  const label = ZONE_TYPES.find((z) => z.value === zone)?.label;
+  return label && (name ? `${label}: ${name}` : label);
+};
 
 const reviewSchema = z.object({ note: z.string().max(1000).optional() });
 type ReviewValues = z.infer<typeof reviewSchema>;
@@ -52,10 +60,13 @@ export default function OwnerRequestDetailPage() {
   const rows: [string, string | null | undefined][] = [
     ['Account', `${request.user?.name} (${request.user?.email})`],
     ['Full name', request.fullName],
-    ['NID / passport', request.nationalIdNumber],
-    ['Phone', request.phone],
-    ['Present address', request.address],
-    ['Property address', request.propertyAddress],
+    ['NID number', request.nationalIdNumber],
+    ['Phone', `${request.phone}${request.user?.phoneVerifiedAt ? ' (verified by SMS)' : ' (not verified)'}`],
+    ['Ownership', OWNERSHIP_TYPES.find((t) => t.value === request.ownershipType)?.label],
+    ['Present address', joinAddress(request.address, request.addressArea, request.addressDistrict, request.addressDivision)],
+    ['Present address area', zoneLabel(request.addressZone, request.addressZoneName)],
+    ['Property address', joinAddress(request.propertyAddress, request.propertyArea, request.propertyDistrict, request.propertyDivision)],
+    ['Property area', zoneLabel(request.propertyZone, request.propertyZoneName)],
     ['Notes', request.notes],
     ['Submitted', formatDate(request.submittedAt)],
     ['Review note', request.reviewNote],

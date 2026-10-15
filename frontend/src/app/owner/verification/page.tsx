@@ -17,7 +17,7 @@ export default function OwnerVerificationPage() {
   const canSubmit = !profile || profile.status === 'REJECTED';
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="-mx-2 max-w-3xl sm:mx-auto">
       <PageHeader
         title="Owner verification"
         description="Confirm your identity and prove that you own the building, flat or land."
@@ -26,7 +26,7 @@ export default function OwnerVerificationPage() {
         <Skeleton className="h-96 w-full" />
       ) : canSubmit ? (
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="px-2 py-6 sm:p-6">
             <VerificationForm
               defaults={
                 profile
@@ -34,8 +34,19 @@ export default function OwnerVerificationPage() {
                       fullName: profile.fullName,
                       nationalIdNumber: profile.nationalIdNumber,
                       phone: profile.phone,
+                      addressDivision: profile.addressDivision ?? '',
+                      addressDistrict: profile.addressDistrict ?? '',
+                      addressArea: profile.addressArea ?? '',
+                      addressZone: profile.addressZone ?? undefined,
+                      addressZoneName: profile.addressZoneName ?? '',
                       address: profile.address,
+                      propertyDivision: profile.propertyDivision ?? '',
+                      propertyDistrict: profile.propertyDistrict ?? '',
+                      propertyArea: profile.propertyArea ?? '',
+                      propertyZone: profile.propertyZone ?? undefined,
+                      propertyZoneName: profile.propertyZoneName ?? '',
                       propertyAddress: profile.propertyAddress,
+                      ownershipType: profile.ownershipType,
                       notes: profile.notes ?? '',
                     }
                   : undefined

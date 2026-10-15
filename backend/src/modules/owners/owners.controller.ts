@@ -22,7 +22,7 @@ export class OwnersController {
 
   @Post()
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FilesInterceptor('documents', 10, { limits: { fileSize: MAX_DOCUMENT_SIZE } }))
+  @UseInterceptors(FilesInterceptor('documents', 15, { limits: { fileSize: MAX_DOCUMENT_SIZE } }))
   submit(
     @CurrentUser() user: AuthUser,
     @Body() dto: SubmitVerificationDto,
